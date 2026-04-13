@@ -24,3 +24,7 @@ nosetests.xml
 env
 .DS_Store
 data.json
+.python-version
+pyproject.toml
+uv.lock
+main.py
