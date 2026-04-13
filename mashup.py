@@ -49,7 +49,7 @@ SOFTWARE.
 import re, sys, random
 from abc import *
 from pprint import pprint
-import simplejson
+import json
 
 def main():
     # ADJUST THESE!!!
@@ -58,26 +58,25 @@ def main():
     Handler = WordHandler
     paths = sys.argv[1:]
     if len(paths) == 0:
-        print 'No input specified'
+        print('No input specified')
         sys.exit(1)
     sources = [Handler(path) for path in paths]
     mc = MarkovChain(order, sources)
     with open("data.json", "w") as f:
-        f.write(simplejson.dumps(mc.distro))
+        f.write(json.dumps(mc.distro))
     # seq = mc.walk(length)
-    # for i in xrange(len(seq) - order):
+    # for i in range(len(seq) - order):
     #     print seq[i], mc.distro[tuple(seq[i:i+order])]
     # mashup = Handler.format(seq)
     # print mashup
 
-class FileHandler(object):
-    __metaclass__ = ABCMeta
+class FileHandler(object, metaclass=ABCMeta):
     def __init__(self, path):
         self.path = path
     def get_counts(self, order):
         counts = {}
         data = self.get_states()
-        for i in xrange(len(data) - order):
+        for i in range(len(data) - order):
             previous_state = tuple(data[i:i+order])
             counts.setdefault(previous_state, {})
             next_state = data[i+order]
@@ -126,21 +125,21 @@ class MarkovChain(object):
         global_counts = {}
         for handler in handlers:
             source_counts = handler.get_counts(self.order)
-            for previous_states, next_states in source_counts.iteritems():
+            for previous_states, next_states in source_counts.items():
                 total = 1.0 * sum(next_states.values())
-                for next_state, count in next_states.iteritems():
+                for next_state, count in next_states.items():
                     global_counts.setdefault(previous_states, {})
                     global_counts[previous_states].setdefault(next_state, 0)
                     global_counts[previous_states][next_state] += count / total
 
         # create cumulative probability distribution
         distro = {}
-        for previous_states, next_states in global_counts.iteritems():
+        for previous_states, next_states in global_counts.items():
             total = 1.0 * sum(next_states.values())
             assert len(previous_states) == 1
             distro[previous_states[0]] = []
             cdf = 0.0
-            for next_state, count in next_states.iteritems():
+            for next_state, count in next_states.items():
                 distro[previous_states[0]].append((next_state, cdf))
                 cdf += count / total
 
